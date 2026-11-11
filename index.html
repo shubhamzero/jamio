@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#04080e">
+<title>JAMIO</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+html,body{margin:0;height:100%;background:#04080e;overflow:hidden}
+iframe{position:fixed;inset:0;width:100%;height:100%;border:0;opacity:0;transition:opacity .5s}
+iframe.on{opacity:1}
+#splash{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;color:#4fd8ff;font:600 13px/1 ui-monospace,Consolas,monospace;letter-spacing:.4em;transition:opacity .5s;
+ background:radial-gradient(600px 400px at 50% 40%,rgba(79,216,255,.14),transparent 70%),#04080e}
+#splash img{width:132px;height:132px;animation:p 2.2s ease-in-out infinite;filter:drop-shadow(0 0 22px rgba(79,216,255,.45))}
+#splash small{letter-spacing:.2em;color:#4b6878;font-size:11px}
+#splash a{color:#ffb547;letter-spacing:.1em;font-size:12px;display:none}
+@keyframes p{50%{transform:scale(1.05);filter:drop-shadow(0 0 34px rgba(79,216,255,.7))}}
+</style></head><body>
+<div id="splash"><img src="icon-512.png" alt=""><div>JAMIO</div><small id="st">INITIALISING…</small><a id="direct" href="#">Open directly</a></div>
+<iframe id="app" allow="microphone; clipboard-read; clipboard-write" title="JAMIO"></iframe>
+<script>
+var APP='https://script.google.com/macros/s/AKfycbwZEXruCOBjaEUrhKGTEZgJJZ13P8SYP-1wFgTYw4tla3AlWie1VZ6cH1JI80XCa8de/exec';
+var f=document.getElementById('app'),s=document.getElementById('splash'),d=document.getElementById('direct');
+d.href=APP;f.src=APP;
+f.onload=function(){setTimeout(function(){f.className='on';s.style.opacity=0;setTimeout(function(){s.style.display='none'},600)},900)};
+setTimeout(function(){document.getElementById('st').textContent='STILL CONNECTING…';d.style.display='block'},12000);
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});
+</script></body></html>

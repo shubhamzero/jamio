@@ -1,2 +1,2 @@
-# jamio
-JAMIO launcher (installable app shell)
+# JAMIO launcher
+Installable app shell (icon, splash, manifest) for the JAMIO Apps Script web app.
