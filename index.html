@@ -10,23 +10,49 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
-html,body{margin:0;height:100%;background:#04080e;overflow:hidden}
+html,body{margin:0;height:100%;background:#04080e;overflow:hidden;color:#d8e6f0;font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
 iframe{position:fixed;inset:0;width:100%;height:100%;border:0;opacity:0;transition:opacity .5s}
 iframe.on{opacity:1}
-#splash{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;color:#4fd8ff;font:600 13px/1 ui-monospace,Consolas,monospace;letter-spacing:.4em;transition:opacity .5s;
- background:radial-gradient(600px 400px at 50% 40%,rgba(79,216,255,.14),transparent 70%),#04080e}
+#splash,#snap{position:fixed;inset:0;transition:opacity .5s;background:radial-gradient(600px 400px at 50% 30%,rgba(79,216,255,.12),transparent 70%),#04080e}
+#splash{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;color:#4fd8ff;font:600 13px/1 ui-monospace,Consolas,monospace;letter-spacing:.4em}
 #splash img{width:132px;height:132px;animation:p 2.2s ease-in-out infinite;filter:drop-shadow(0 0 22px rgba(79,216,255,.45))}
 #splash small{letter-spacing:.2em;color:#4b6878;font-size:11px}
-#splash a{color:#ffb547;letter-spacing:.1em;font-size:12px;display:none}
+a.direct{color:#ffb547;font-size:12px;display:none}
 @keyframes p{50%{transform:scale(1.05);filter:drop-shadow(0 0 34px rgba(79,216,255,.7))}}
+#snap{display:none;overflow:auto;padding:14px 14px 40px;box-sizing:border-box}
+.bar{display:flex;align-items:center;gap:10px;margin-bottom:12px}.bar b{color:#4fd8ff;letter-spacing:.2em;font-size:14px}.bar span{color:#7f97a8;font-size:13px;flex:1}
+.load{height:3px;background:rgba(79,216,255,.15);border-radius:3px;overflow:hidden;margin-bottom:12px}.load i{display:block;height:100%;width:40%;background:#4fd8ff;animation:l 1.2s ease-in-out infinite}
+@keyframes l{0%{margin-left:-40%}100%{margin-left:100%}}
+.c{border:1px solid rgba(79,216,255,.25);border-radius:12px;padding:12px 14px;margin-bottom:10px;background:rgba(12,30,44,.6)}
+.c h3{margin:0 0 6px;font-size:12px;letter-spacing:.18em;color:#4fd8ff;text-transform:uppercase}
+.c ul{margin:0;padding-left:18px}.c li{margin:3px 0}
+.kp{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}.kp div{border:1px solid rgba(79,216,255,.25);border-radius:10px;padding:8px;text-align:center}.kp b{display:block;font-size:18px;color:#fff}.kp span{font-size:10px;letter-spacing:.14em;color:#7f97a8;text-transform:uppercase}
+.wx{font-size:22px;color:#fff}.wx small{font-size:13px;color:#9fb4c3}
+.note{color:#4b6878;font-size:12px;text-align:center;margin-top:8px}
 </style></head><body>
-<div id="splash"><img src="icon-512.png" alt=""><div>JAMIO</div><small id="st">INITIALISING…</small><a id="direct" href="#">Open directly</a></div>
-<iframe id="app" allow="microphone; clipboard-read; clipboard-write" title="JAMIO"></iframe>
+<div id="splash"><img src="icon-512.png" alt=""><div>JAMIO</div><small id="st">INITIALISING…</small><a class="direct" href="#">Open directly</a></div>
+<div id="snap"></div>
+<iframe id="app" allow="geolocation; microphone; clipboard-read; clipboard-write" title="JAMIO"></iframe>
 <script>
 var APP='https://script.google.com/macros/s/AKfycbwZEXruCOBjaEUrhKGTEZgJJZ13P8SYP-1wFgTYw4tla3AlWie1VZ6cH1JI80XCa8de/exec';
-var f=document.getElementById('app'),s=document.getElementById('splash'),d=document.getElementById('direct');
-d.href=APP;f.src=APP;
-f.onload=function(){setTimeout(function(){f.className='on';s.style.opacity=0;setTimeout(function(){s.style.display='none'},600)},900)};
-setTimeout(function(){document.getElementById('st').textContent='STILL CONNECTING…';d.style.display='block'},12000);
+var f=document.getElementById('app'),s=document.getElementById('splash'),sn=document.getElementById('snap'),ready=false;
+[].forEach.call(document.querySelectorAll('a.direct'),function(a){a.href=APP});
+function esc(x){return String(x==null?'':x).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function ago(t){var m=Math.round((Date.now()-t)/60000);return m<1?'just now':m<60?m+' min ago':Math.round(m/60)+' h ago'}
+function showSnap(d){var h=new Date().getHours(),g=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+ sn.innerHTML='<div class="bar"><b>JAMIO</b><span>'+g+(d.name?', '+esc(d.name):'')+'</span></div><div class="load"><i></i></div>'+
+ '<div class="kp"><div><b>'+d.tasks+(d.late?' · '+d.late+'!':'')+'</b><span>Tasks</span></div><div><b>'+esc(d.habits)+'</b><span>Habits</span></div><div><b>'+(d.wx?esc(d.wx.i)+' '+d.wx.t+'°':'—')+'</b><span>'+(d.wx?esc(d.wx.p):'Weather')+'</span></div></div>'+
+ (d.one?'<div class="c"><h3>🎯 One thing now</h3>'+esc(d.one)+'</div>':'')+
+ (d.plate&&d.plate.length?'<div class="c"><h3>🍽 On my plate</h3><ul>'+d.plate.map(function(x){return'<li>'+esc(x)+'</li>'}).join('')+'</ul></div>':'')+
+ (d.brief&&d.brief.length?'<div class="c"><h3>☀ Brief</h3><ul>'+d.brief.map(function(x){return'<li>'+esc(x)+'</li>'}).join('')+'</ul></div>':'')+
+ (d.wx?'<div class="c"><h3>Weather</h3><div class="wx">'+esc(d.wx.i)+' '+d.wx.t+'° <small>'+esc(d.wx.x)+' · H '+d.wx.hi+'° L '+d.wx.lo+'° · rain '+d.wx.r+'%</small></div></div>':'')+
+ '<div class="note">Saved view from '+ago(d.at)+' · live app is loading… <a class="direct" style="display:inline" href="'+APP+'">open directly</a></div>';
+ sn.style.display='block';s.style.display='none'}
+try{var cached=JSON.parse(localStorage.getItem('jamio_snap')||'null');if(cached&&cached.at)showSnap(cached)}catch(e){}
+window.addEventListener('message',function(e){if(!/\.googleusercontent\.com$|script\.google\.com$/.test(new URL(e.origin).hostname))return;var m=e.data;if(m&&m.jamio==='snap'&&m.d){try{localStorage.setItem('jamio_snap',JSON.stringify(m.d))}catch(x){}}if(m&&m.jamio==='ready')reveal()});
+function reveal(){if(ready)return;ready=true;f.className='on';[s,sn].forEach(function(x){x.style.opacity=0;setTimeout(function(){x.style.display='none'},600)})}
+f.src=APP;
+f.onload=function(){setTimeout(reveal,sn.style.display==='block'?30000:900)};
+setTimeout(function(){if(ready)return;document.getElementById('st').textContent='STILL CONNECTING…';[].forEach.call(document.querySelectorAll('a.direct'),function(a){a.style.display='inline'})},12000);
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});
 </script></body></html>
