@@ -58,8 +58,11 @@ function showSnap(d){var h=new Date().getHours(),g=h<12?'Good morning':h<17?'Goo
  '<div class="note">Saved view from '+ago(d.at)+' · live app is loading… <a class="direct" style="display:inline" href="'+APP+'">open directly</a></div>';
  sn.style.display='block';s.style.display='none'}
 try{var cached=JSON.parse(localStorage.getItem('jamio_snap')||'null');if(cached&&cached.at)showSnap(cached)}catch(e){}
-window.addEventListener('message',function(e){if(!/\.googleusercontent\.com$|script\.google\.com$/.test(new URL(e.origin).hostname))return;var m=e.data;if(m&&m.jamio==='snap'&&m.d){try{localStorage.setItem('jamio_snap',JSON.stringify(m.d))}catch(x){}}if(m&&m.jamio==='ready'){reveal();var q=lqGet();if(q.length&&e.source)try{e.source.postMessage({jamio:'lq',items:q},'*')}catch(x){}}if(m&&m.jamio==='lqack'&&Array.isArray(m.ids)){lqSet(lqGet().filter(function(x){return m.ids.indexOf(x.id)<0}))}});
+window.addEventListener('message',function(e){if(!/\.googleusercontent\.com$|script\.google\.com$/.test(new URL(e.origin).hostname))return;var m=e.data;if(m&&m.jamio==='snap'&&m.d){try{localStorage.setItem('jamio_snap',JSON.stringify(m.d))}catch(x){}}if(m&&m.jamio==='ready'){reveal();if(window.__goQ&&e.source){try{e.source.postMessage({jamio:'go',q:window.__goQ},'*')}catch(x){}window.__goQ=''}var q=lqGet();if(q.length&&e.source)try{e.source.postMessage({jamio:'lq',items:q},'*')}catch(x){}}if(m&&m.jamio==='lqack'&&Array.isArray(m.ids)){lqSet(lqGet().filter(function(x){return m.ids.indexOf(x.id)<0}))}});
 function reveal(){if(ready)return;ready=true;f.className='on';[s,sn].forEach(function(x){x.style.opacity=0;setTimeout(function(){x.style.display='none'},600)})}
+(function(){try{var u=new URL(location.href),q=u.searchParams.get('q'),tt=[u.searchParams.get('title'),u.searchParams.get('text'),u.searchParams.get('url')].filter(Boolean).join(' ').trim();
+ if(tt){var L=lqGet();L.push({id:'s'+Date.now(),text:'note: '+tt.slice(0,900),at:Date.now()});lqSet(L)}
+ if(q)window.__goQ=q;if(q||tt)history.replaceState(null,'',u.pathname)}catch(e){}})();
 if(navigator.onLine===false)showOff();
 window.addEventListener('offline',function(){if(!ready)showOff()});
 window.addEventListener('online',function(){if(!ready){f.src=APP}});
