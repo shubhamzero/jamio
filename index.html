@@ -34,6 +34,7 @@ a.direct{color:#ffb547;font-size:12px;display:none}
 #off textarea{width:100%;box-sizing:border-box;min-height:70px;background:#07121c;color:#d8e6f0;border:1px solid rgba(79,216,255,.3);border-radius:8px;padding:8px;font:15px system-ui}
 #off button{margin-top:8px;background:#4fd8ff;color:#04080e;border:0;border-radius:8px;padding:8px 14px;font-weight:700}
 #off .q{color:#9fb4c3;font-size:13px;margin-top:6px}
+#off .c{background:rgba(255,255,255,.05);border-radius:10px;padding:8px 10px;margin:8px 0}#off .r{display:flex;align-items:center;gap:6px;padding:4px 0}#off .r span{flex:1}#off .ob{background:#14324a;color:#cfefff;border:1px solid #2a5d80;border-radius:8px;padding:6px 10px;margin:2px;font-size:14px}#off .ob.on{display:inline-block;background:#1d4d33;border-color:#3ddc97}#off h3{margin:2px 0 6px}#off .q{font-size:12px;opacity:.8;margin:4px 0}
 </style></head><body>
 <div id="splash"><img src="icon-512.png" alt=""><div>JAMIO</div><small id="st">INITIALISING…</small><a class="direct" href="#">Open directly</a></div>
 <div id="snap"></div>
@@ -45,9 +46,33 @@ var f=document.getElementById('app'),s=document.getElementById('splash'),sn=docu
 function esc(x){return String(x==null?'':x).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 function ago(t){var m=Math.round((Date.now()-t)/60000);return m<1?'just now':m<60?m+' min ago':Math.round(m/60)+' h ago'}
 var LQ='jamio_lq';function lqGet(){try{return JSON.parse(localStorage.getItem(LQ)||'[]')}catch(e){return[]}}function lqSet(q){try{localStorage.setItem(LQ,JSON.stringify(q))}catch(e){}}
-function offBox(){var q=lqGet();return'<div id="off"><h3>📴 OFFLINE · QUICK ADD</h3><textarea id="lqt" placeholder="e.g. 200 petrol, meditation done, buy atta – saved on this phone, synced when online"></textarea><button onclick="lqAdd()">Save on phone</button><div class="q" id="lqq">'+(q.length?'⏳ '+q.length+' waiting: '+q.map(function(x){return esc(x.text)}).join(' · '):'')+'</div></div>'}
-function lqAdd(){var t=document.getElementById('lqt');if(!t||!t.value.trim())return;var q=lqGet();q.push({id:'l'+Date.now(),text:t.value.trim(),at:Date.now()});lqSet(q);t.value='';document.getElementById('lqq').textContent='⏳ '+q.length+' waiting: '+q.map(function(x){return x.text}).join(' · ')}
-function showOff(){if(sn.style.display!=='block'){sn.innerHTML='<div class="bar"><b>JAMIO</b><span>Offline</span></div>';sn.style.display='block';s.style.display='none'}if(!document.getElementById('off'))sn.insertAdjacentHTML('afterbegin',offBox());document.getElementById('off').style.display='block'}
+function today(){var d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)}
+function snapGet(){try{return JSON.parse(localStorage.getItem('jamio_snap')||'null')||{}}catch(e){return{}}}
+function snapSave(d){try{localStorage.setItem('jamio_snap',JSON.stringify(d))}catch(e){}}
+function lqPush(a,g,text){var q=lqGet();q.push({id:'o'+Date.now()+Math.random().toString(36).slice(2,5),a:a,g:g,d:today(),text:text,at:Date.now()});lqSet(q);offDraw()}
+function offAct(kind,ix,extra){var d=snapGet(),o=d.off;if(!o)return;
+ if(kind==='task'){var t=o.tasks[ix];lqPush('task',[t.id],'✓ '+t.t);o.tasks.splice(ix,1)}
+ else if(kind==='move'){var t2=o.tasks[ix];lqPush('move',['tasks:'+t2.id],'→ tomorrow: '+t2.t);o.tasks.splice(ix,1)}
+ else if(kind==='habit'){var h=o.habits[ix];if(h.ok)return;h.ok=true;lqPush('habit',[h.n],'♻ '+h.n)}
+ else if(kind==='sup'){var s2=o.sup[ix];s2.q=Math.max(0,Math.round((s2.k==='Service'?(s2.q?0:1):(+s2.q||0)+extra)*10)/10);s2.dirty=1}
+ else if(kind==='supsave'){o.sup.forEach(function(x){if(x.dirty){lqPush('supply',[x.n,x.q],x.n+' '+(x.k==='Service'?(x.q?'came':'absent'):x.q+' '+x.u));delete x.dirty}})}
+ else if(kind==='sleep'){lqPush('sleep',[extra],'😴 '+extra+' h')}
+ else if(kind==='mood'){lqPush('mood',[extra],'Mood '+extra)}
+ snapSave(d);offDraw()}
+function offDraw(){var el=document.getElementById('off');if(!el)return;var d=snapGet(),o=d.off,q=lqGet(),b=function(t,on){return'<button class="ob" onclick="'+on+'">'+t+'</button>'};
+ var h='<h3>📴 OFFLINE JAMIO</h3><div class="q">'+(q.length?'⏳ '+q.length+' change(s) waiting – they upload by themselves when the internet is back':'Changes here are saved on this phone and uploaded later.')+'</div>';
+ if(o){if(o.d&&o.d!==today())h+='<div class="q">Lists saved on '+esc(o.d)+'</div>';
+  h+='<div class="c"><h3>✅ Tasks</h3>'+(o.tasks.length?o.tasks.map(function(t,i){return'<div class="r"><span>'+(t.late?'🔴 ':'')+esc(t.t)+'</span>'+b('✓','offAct(\'task\','+i+')')+b('→','offAct(\'move\','+i+')')+'</div>'}).join(''):'<div class="q">Nothing due.</div>')+'</div>';
+  h+='<div class="c"><h3>♻ Habits</h3>'+o.habits.map(function(x,i){return x.ok?'<span class="ob on">✓ '+esc(x.n)+'</span>':b(esc(x.n),'offAct(\'habit\','+i+')')}).join(' ')+'</div>';
+  if(o.sup&&o.sup.length)h+='<div class="c"><h3>🔁 Daily & recurring</h3>'+o.sup.map(function(x,i){return'<div class="r"><span>'+esc(x.n)+'</span>'+(x.k==='Service'?b(x.q?'✓ Came':'✗ Absent','offAct(\'sup\','+i+',0)'):b('−','offAct(\'sup\','+i+',-'+x.s+')')+'<b>'+x.q+' '+esc(x.u)+'</b>'+b('+','offAct(\'sup\','+i+','+x.s+')'))+'</div>'}).join('')+b('Save today','offAct(\'supsave\')')+'</div>';
+  h+='<div class="c"><h3>😴 Sleep · 😊 Mood</h3>'+[5,6,7,8].map(function(x){return b(x+' h','offAct(\'sleep\',0,'+x+')')}).join(' ')+'<br>'+[['😀','great'],['🙂','good'],['😐','okay'],['😕','low'],['😞','bad']].map(function(m){return b(m[0],'offAct(\'mood\',0,\''+m[1]+'\')')}).join(' ')+'</div>'}
+ else h+='<div class="q">Open JAMIO once with internet to save your lists for offline use.</div>';
+ h+='<div class="c"><h3>➕ Quick add</h3><textarea id="lqt" placeholder="e.g. 200 petrol · task call plumber tomorrow · note …"></textarea><button onclick="lqAdd()">Save on phone</button></div>';
+ if(q.length)h+='<div class="q">Waiting: '+q.slice(-6).map(function(x){return esc(x.text)}).join(' · ')+'</div>';
+ el.innerHTML=h}
+function offBox(){return'<div id="off"></div>'}
+function lqAdd(){var t=document.getElementById('lqt');if(!t||!t.value.trim())return;var q=lqGet();q.push({id:'l'+Date.now(),text:t.value.trim(),at:Date.now()});lqSet(q);t.value='';offDraw()}
+function showOff(){if(sn.style.display!=='block'){sn.innerHTML='<div class="bar"><b>JAMIO</b><span>Offline</span></div>';sn.style.display='block';s.style.display='none'}if(!document.getElementById('off'))sn.insertAdjacentHTML('afterbegin',offBox());document.getElementById('off').style.display='block';offDraw()}
 function showSnap(d){var h=new Date().getHours(),g=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
  sn.innerHTML='<div class="bar"><b>JAMIO</b><span>'+g+(d.name?', '+esc(d.name):'')+'</span></div><div class="load"><i></i></div>'+
  '<div class="kp"><div><b>'+d.tasks+(d.late?' · '+d.late+'!':'')+'</b><span>Tasks</span></div><div><b>'+esc(d.habits)+'</b><span>Habits</span></div><div><b>'+(d.wx?esc(d.wx.i)+' '+d.wx.t+'°':'—')+'</b><span>'+(d.wx?esc(d.wx.p):'Weather')+'</span></div></div>'+
@@ -58,7 +83,7 @@ function showSnap(d){var h=new Date().getHours(),g=h<12?'Good morning':h<17?'Goo
  '<div class="note">Saved view from '+ago(d.at)+' · live app is loading… <a class="direct" style="display:inline" href="'+APP+'">open directly</a></div>';
  sn.style.display='block';s.style.display='none'}
 try{var cached=JSON.parse(localStorage.getItem('jamio_snap')||'null');if(cached&&cached.at)showSnap(cached)}catch(e){}
-window.addEventListener('message',function(e){if(!/\.googleusercontent\.com$|script\.google\.com$/.test(new URL(e.origin).hostname))return;var m=e.data;if(m&&m.jamio==='snap'&&m.d){try{localStorage.setItem('jamio_snap',JSON.stringify(m.d))}catch(x){}}if(m&&m.jamio==='ready'){reveal();if(window.__goQ&&e.source){try{e.source.postMessage({jamio:'go',q:window.__goQ},'*')}catch(x){}window.__goQ=''}var q=lqGet();if(q.length&&e.source)try{e.source.postMessage({jamio:'lq',items:q},'*')}catch(x){}}if(m&&m.jamio==='lqack'&&Array.isArray(m.ids)){lqSet(lqGet().filter(function(x){return m.ids.indexOf(x.id)<0}))}});
+window.addEventListener('message',function(e){if(!/\.googleusercontent\.com$|script\.google\.com$/.test(new URL(e.origin).hostname))return;var m=e.data;if(m&&m.jamio==='snap'&&m.d){try{localStorage.setItem('jamio_snap',JSON.stringify(m.d))}catch(x){}}if(m&&m.jamio==='ready'){reveal();if(window.__goQ&&e.source){try{e.source.postMessage({jamio:'go',q:window.__goQ},'*')}catch(x){}window.__goQ=''}var q=lqGet();if(q.length&&e.source)try{e.source.postMessage({jamio:'lq',items:q},'*')}catch(x){}}if(m&&m.jamio==='lqack'&&Array.isArray(m.ids)){lqSet(lqGet().filter(function(x){return m.ids.indexOf(x.id)<0}));offDraw()}});
 function reveal(){if(ready)return;ready=true;f.className='on';[s,sn].forEach(function(x){x.style.opacity=0;setTimeout(function(){x.style.display='none'},600)})}
 (function(){try{var u=new URL(location.href),q=u.searchParams.get('q'),tt=[u.searchParams.get('title'),u.searchParams.get('text'),u.searchParams.get('url')].filter(Boolean).join(' ').trim();
  if(tt){var L=lqGet();L.push({id:'s'+Date.now(),text:'note: '+tt.slice(0,900),at:Date.now()});lqSet(L)}
