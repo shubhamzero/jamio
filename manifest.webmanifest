@@ -31,6 +31,17 @@
   ],
   "shortcuts": [
     {
+      "name": "🧹 Daily Walk",
+      "short_name": "Walk",
+      "url": "./?q=walk",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
       "name": "₹ Spend",
       "short_name": "Spend",
       "url": "./?q=expense",
