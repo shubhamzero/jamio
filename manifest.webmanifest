@@ -31,9 +31,42 @@
   ],
   "shortcuts": [
     {
-      "name": "Expense",
-      "short_name": "₹ Expense",
+      "name": "₹ Spend",
+      "short_name": "Spend",
       "url": "./?q=expense",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "✔ Task",
+      "short_name": "Task",
+      "url": "./?q=task",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "🔁 Daily items",
+      "short_name": "Daily",
+      "url": "./?q=daily",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "📝 Note",
+      "short_name": "Note",
+      "url": "./?q=note",
       "icons": [
         {
           "src": "icon-192.png",
